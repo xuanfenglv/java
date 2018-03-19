@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8" />
+    <title>Insert title here</title>
+</head>
+<body>
+<h1 th:inlines="text">文件上传</h1>
+<h2>表单提交:方式1</h2>
+<form action="singleFileUpload" method="post" enctype="multipart/form-data">
+    <p>选择文件: <input type="file" name="fileName"/></p>
+    <p><input type="submit" value="提交"/></p>
+</form>
+<h2>不刷新页面js提交</h2>
+<p>选择文件: <input type="file" id="fileName" name="fileName"/></p>
+<p><input type="submit" value="提交" onclick="commit()"/></p>
+</body>
+</html>
+<script>
+    function commit(e){
+        var xmlHttp;
+        if(window.XMLHttpRequest){
+            xmlHttp = new XMLHttpRequest();
+        }else{
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        //构造FormData对象
+        var formData = new FormData();
+
+        //添加文件数据
+        formData.append("fileName",document.getElementById("fileName").files[0])
+        //使用POST方法发送数据
+        xmlHttp.open("POST","/singleFileUpload",true);
+        xmlHttp.send(formData)
+        //返回的数据
+        xmlHttp.onreadystatechange=function(){
+            if (xmlHttp.readyState==4 && xmlHttp.status==200){
+                console.log(xmlHttp.responseText);
+            }
+        }
+    }
+</script>

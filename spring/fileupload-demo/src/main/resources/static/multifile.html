@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8" />
+    <title>Insert title here</title>
+</head>
+<body>
+<h1 th:inlines="text">文件上传</h1>
+<h2>表单提交:方式1</h2>
+<form action="multifileUpload" method="post" enctype="multipart/form-data" >
+    <p>选择文件1: <input type="file" name="fileName"/></p>
+    <p>选择文件2: <input type="file" name="fileName"/></p>
+    <p>选择文件3: <input type="file" name="fileName"/></p>
+    <p><input type="submit" value="提交"/></p>
+</form>
+<h2>表单提交:方式2</h2>
+<form action="multifileUpload" method="post" enctype="multipart/form-data" >
+    <p>选择文件: <input type="file" name="fileName" multiple="multiple"/></p>
+    <p><input type="submit" value="提交"/></p>
+</form>
+<h2>不刷新页面js提交</h2>
+<p>选择文件: <input type="file" id="fileName" multiple="multiple"/></p>
+<p><input type="submit" value="提交" onclick="confirm()"/></p>
+</body>
+</html>
+<script>
+    function confirm(){
+        var xmlHttp;
+        if(window.XMLHttpRequest){
+            xmlHttp = new XMLHttpRequest();
+        }else{
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        //构造FormData对象
+        var formData = new FormData();
+        var files = document.getElementById("fileName").files;
+        //添加文件数据
+        for(var i=0;i<files.length;i++) {
+            formData.append("files", files[i]);
+        }
+
+        //使用POST方法发送数据
+        xmlHttp.open("POST","/multifileUpload",true);
+        xmlHttp.send(formData)
+        //返回的数据
+        xmlHttp.onreadystatechange=function(){
+            if (xmlHttp.readyState==4 && xmlHttp.status==200){
+                console.log(xmlHttp.responseText);
+            }
+        }
+    }
+</script>
