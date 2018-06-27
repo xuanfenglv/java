@@ -23,7 +23,7 @@ public class DownLoadController {
             response.setContentType("application/force-download");
             response.setHeader("Content-Disposition", "attachment;fileName=" + filename);
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[8];
             FileInputStream fis = null; //文件输入流
             BufferedInputStream bis = null;
 

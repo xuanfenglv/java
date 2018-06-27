@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8" />
+    <title>Insert title here</title>
+</head>
+<body>
+<h1 th:inlines="text">文件上传</h1>
+
+<h2>不刷新页面js提交</h2>
+<p>选择文件: <input type="file" id="file" name="file"/></p>
+<p><input type="submit" value="提交" onclick="commit()"/></p>
+</body>
+</html>
+<script>
+    var BYTES_PER_SLICE = 1024; // 每个文件切片大小定为1k.
+
+    function commit() {
+        var file = document.getElementById("file").files[0];
+        var totalSize = file.size;
+        var start=0,index = 0,end,hasSendNum=0;
+        var fileName = file.name;
+
+        // 计算文件切片总数
+        var totalSlices = Math.ceil(file.size / BYTES_PER_SLICE);
+        while(start < file.size) {
+            end = start + BYTES_PER_SLICE;
+            if(end > file.size) {
+                end = file.size;
+            }
+            var slice =file.slice(start,end);//切割文件
+            uploadFile(slice, index++,fileName);
+            hasSendNum++;
+            start = end;
+            console.log(parseInt(hasSendNum/totalSlices*100)+"%");
+            if ( hasSendNum>=totalSlices)
+                alert("上传完毕");
+        }
+    }
+
+    //上传文件
+    function uploadFile(slice, index,fileName) {
+        var retry = 1;
+        var formDate = new FormData();
+        formDate.append("slice", slice);
+        formDate.append("fileName",fileName);
+        formDate.append("index",index);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'sliceUpload', true);//false指同步上传，因为我的服务器内存较小，选择同步，如果追求速度，可以选择 //ture，异步上传
+        xhr.send(formDate);
+        xhr.onreadystatechange = ()=>{
+            if(xhr.readyState==4) {
+                if(xhr.status!=200) {
+                    // 重试
+                    uploadFile(slice, index,fileName);
+                }
+            }
+        }
+    }
+</script>
