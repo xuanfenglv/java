@@ -8,44 +8,33 @@
 <body>
 <h1 th:inlines="text">文件上传</h1>
 
-<h2>分片上传</h2>
+<h2>不刷新页面js提交</h2>
 <p>选择文件: <input type="file" id="file" name="file"/></p>
 <p><input type="submit" value="提交" onclick="commit()"/></p>
 </body>
 </html>
 <script>
-    // 每个文件切片大小定为1M(1024*1024字节)(需要跟服务器协商好).
-    var BYTES_PER_SLICE = 1<<20;
-    // 已发送的数量
+    var BYTES_PER_SLICE = 1<<20; // 每个文件切片大小定为1M(1024*1024字节).
     var  hasSendNum = 0;
-    // 总切片数
     var totalSlices;
 
-    // 提交方法
     function commit() {
-        // 拿出选中的第一个文件
         var file = document.getElementById("file").files[0];
-        // 文件的总字节数
         var totalSize = file.size;
-        // 当前片数
-        var index = 0;
-        // 分片的开始、结束（不含）
-        var start,end;
-        // 文件名
+        var start=0,index = 0,end;
         var fileName = file.name;
-        // 初始化已发送数量为0
         hasSendNum = 0;
 
-        // 计算文件切片总数（向上取整）
-        totalSlices = Math.ceil(file.size / BYTES_PER_SLICE);
-        // 不断循环将切片上传
-        while(index < totalSlices) {
-
-            start = index*BYTES_PER_SLICE;
+        // 计算文件切片总数
+        var totalSlices = Math.ceil(file.size / BYTES_PER_SLICE);
+        while(start < file.size) {
             end = start + BYTES_PER_SLICE;
-
+            if(end > file.size) {
+                end = file.size;
+            }
             var slice =file.slice(start,end);//切割文件
             uploadFile(slice, index++,fileName);
+            start = end;
         }
     }
 
@@ -58,17 +47,16 @@
         formDate.append("index",index);
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'sliceUpload', true);//false指同步上传，因为我的服务器内存较小，选择同步，如果追求速度，可以选择 //ture，异步上传
-        xhr.onreadystatechange = ()=>uploadCallBack(xhr,slice,index,fileName);
+        xhr.open('POST', 'sliceUpload', false);//false指同步上传，因为我的服务器内存较小，选择同步，如果追求速度，可以选择 //ture，异步上传
+        xhr.onreadystatechange = ()=>uploadCallBack(xhr,index);
         xhr.send(formDate);
-
     }
 
     /**
      * @desc 上传回调
      * @param xhr
      */
-    function uploadCallBack(xhr,slice,index,fileName) {
+    function uploadCallBack(xhr,index) {
         if(xhr.readyState==4) {
             if(xhr.status==200) {
                 if(xhr.responseText==1) {
@@ -77,11 +65,13 @@
                     if(hasSendNum==totalSlices) {
                         console.log("上传完毕");
                     }
+                } else {
+                    console.log("上传失败，重试##################################");
+                    // 重试
+                    uploadFile(slice, index,fileName);
                 }
-            } else {
-                console.log("上传失败，重试##################################");
-                // 重试
-                uploadFile(slice, index,fileName);
+
+
             }
         }
     }

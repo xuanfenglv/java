@@ -20,11 +20,12 @@ import java.util.List;
  */
 @RestController
 public class SliceUpload {
-    private final int BYTES_PER_SLICE = 1024;
+    private final int BYTES_PER_SLICE = 1<<20;
     @RequestMapping(value="sliceUpload",method= RequestMethod.POST)
-    public String upload(@RequestParam("slice")MultipartFile slice,String fileName,int index) {
+    public int upload(@RequestParam("slice")MultipartFile slice,String fileName,int index) {
+        int result = 0;
         if(slice.isEmpty()){
-            return "false";
+            return 0;
         }
         int size = (int) slice.getSize();
         System.out.println(fileName + "-->" + size);
@@ -44,15 +45,10 @@ public class SliceUpload {
             byte[] bytes = slice.getBytes(); //保存文件
             randomAccessFile.seek(index*BYTES_PER_SLICE);
             randomAccessFile.write(bytes);
-            return "true";
-        } catch (IllegalStateException e) {
+            result = 1;
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return "false";
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return  "false";
         }finally {
             try {
                 randomAccessFile.close();
@@ -60,5 +56,6 @@ public class SliceUpload {
                 e.printStackTrace();
             }
         }
+        return result;
     }
 }

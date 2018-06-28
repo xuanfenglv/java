@@ -16,7 +16,7 @@ import java.io.*;
 public class DownLoadController {
     @RequestMapping("download")
     public String downLoad(HttpServletResponse response){
-        String filename="2.jpg";
+        String filename="video1.mp4";
         String filePath = "d:/test" ;
         File file = new File(filePath + "/" + filename);
         if(file.exists()){ //判断文件父目录是否存在
